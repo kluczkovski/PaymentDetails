@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
+using Newtonsoft.Json.Serialization;
 using WebAPI_Angular.Models;
 
 namespace WebAPI_Angular
@@ -28,8 +28,17 @@ namespace WebAPI_Angular
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .AddJsonOptions(options =>
+                   {
+                       var resolver = options.SerializerSettings.ContractResolver;
+                       if ( resolver != null)
+                       {
+                           (resolver as DefaultContractResolver).NamingStrategy = null;
+                       }
+                   });
+      
             services.AddDbContext<PaymentDetailContext>(options =>                 options.UseMySql(Configuration.GetConnectionString("DevConnection"), builder =>                 builder.MigrationsAssembly("WebAPI_Angular")));
 
         }
@@ -47,7 +56,7 @@ namespace WebAPI_Angular
                 app.UseHsts();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseMvc();
         }
     }
